@@ -1,12 +1,14 @@
 package com.example.httprequest;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -21,7 +23,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView responseTextView;
     private ListView top100;
     private ArrayList<String> artistsList = new ArrayList<String>();
 
@@ -31,10 +32,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         top100 = (ListView) findViewById(R.id.artistCharts);
+        top100.setOnItemClickListener(clickListener);
 
         GetArtistCharts apiRequest = new GetArtistCharts();
         apiRequest.execute();
     }
+
+    private AdapterView.OnItemClickListener clickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Intent intent = new Intent(MainActivity.this, SecondaryActivity.class);
+            intent.putExtra("com.android.Hot100Artists", artistsList.get(position));
+            Log.i("fetching artist's name", artistsList.get(position));
+            startActivity(intent);
+        }
+    };
 
     class GetArtistCharts extends AsyncTask<String, Void, JSONArray> {
         @Override
@@ -54,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
                     obj = obj.getJSONObject("art");
                     obj = obj.getJSONObject("day");
                     JSONArray artistsArray = obj.getJSONArray("all");
-                    Log.i("array composing", artistsArray.toString());
                     return artistsArray;
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -76,9 +87,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            Log.i("passing to onCreate", artistsList.toString());
             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, artistsList);
-            Log.i("artist List after async task", artistsList.toString());
             top100.setAdapter(arrayAdapter);
         }
     }
